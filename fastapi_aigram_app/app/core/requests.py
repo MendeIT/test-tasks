@@ -1,13 +1,19 @@
 import os
+from typing import Any
 
 import requests
 from fastapi import HTTPException
 from dotenv import load_dotenv
 
+from api.schemas import ProductSchema
+from database.crud import get_product_by_article
+from database.db import get_session
+from database.models import Product
+
 load_dotenv()
 
 
-async def request_data_from_wb_by_article(article: int) -> dict:
+async def request_data_from_wb_by_article(article: int):
     """Получить данные с API WB по артикулу товара."""
 
     url = os.getenv("WB_URL") + str(article)
@@ -19,14 +25,11 @@ async def request_data_from_wb_by_article(article: int) -> dict:
             detail="Вводимый артикул не найден!"
         )
 
-    data = response.json()
-    product = await get_product_from_data(data)
-
-    return product
+    return response.json()
 
 
-async def get_product_from_data(data: dict) -> dict:
-    """Получить информацию о товаре из данных."""
+async def clear_product_data(data: Any) -> dict:
+    """Очитка данных о товаре из данных."""
 
     try:
         product = data['data']['products'][0]
@@ -44,3 +47,26 @@ async def get_product_from_data(data: dict) -> dict:
             "rating": product.get('rating', None),
             "total_quantity": product.get('totalQuantity'),
         }
+
+
+async def periodic_get_data(article):
+    """Метод переодического обнавления данных."""
+
+    data = await request_data_from_wb_by_article(article)
+    clear_data = await clear_product_data(data)
+    product = ProductSchema(**clear_data)
+
+    async with get_session() as session:
+        existing_product = await get_product_by_article(session, product)
+        if existing_product is None:
+            new_product = Product(
+                article=product.article,
+                name=product.name,
+                price=product.price,
+                price_sale=product.price_sale,
+                rating=product.rating,
+                total_quantity=product.total_quantity,
+            )
+            session.add(new_product)
+            await session.commit()
+            await session.refresh(new_product)

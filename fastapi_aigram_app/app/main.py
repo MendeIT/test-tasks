@@ -1,38 +1,33 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import FastAPI
 
-from api.schemas import ProductBaseSchema
-from core.requests import request_data_from_wb_by_article
-from database.db import get_session, init_models, shutdown, drop_models
-from database.crud import update_or_create_product
+from api.routers import router
+from database.db import (
+    init_models,
+    drop_models,
+    shutdown
+)
+from core.scheduler import scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_models()
+    scheduler.start()
 
     yield
 
-    await shutdown()
+    scheduler.shutdown()
     await drop_models()
+    await shutdown()
 
 
-app = FastAPI(root_path="/api/v1", lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(router)
 
 
 @app.get("/")
 async def start_app():
     return {"Hello": "World"}
-
-
-@app.post("/products/")
-async def get_products(
-    product: ProductBaseSchema,
-    session: AsyncSession = Depends(get_session)
-):
-    new_product = await request_data_from_wb_by_article(product.article)
-    await update_or_create_product(session=session, product=new_product)
-
-    return new_product

@@ -1,5 +1,7 @@
 import os
+from contextlib import asynccontextmanager
 
+# from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -10,6 +12,12 @@ from dotenv import load_dotenv
 from database.models import Base
 
 load_dotenv()
+
+# # Для подключения Apscheduler
+# sync_engine = create_engine(
+#     os.getenv("SYNC_DATABASE_URL"),
+#     echo=True
+# )
 
 async_engine = create_async_engine(
     url=os.getenv("DATABASE_URL"),
@@ -24,21 +32,18 @@ async_session_maker = async_sessionmaker(
 
 
 async def init_models():
-    """Создание базы данных.
-    Создание таблиц (для разработки).
-    """
+    """Создание таблиц (для разработки)."""
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
 
 async def drop_models():
-    """Удаление базы данных.
-    Удаление таблиц (для разработки).
-    """
+    """Удаление таблиц (для разработки)."""
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
 
+@asynccontextmanager
 async def get_session() -> AsyncSession:
     """Подключение к БД."""
     async with async_session_maker() as session:
