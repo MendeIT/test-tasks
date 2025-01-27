@@ -17,12 +17,12 @@ load_dotenv()
 # Для подключения Apscheduler
 sync_engine = create_engine(
     os.getenv("SYNC_DATABASE_URL"),
-    echo=os.getenv("DEBUG")
+    echo=True
 )
 
 async_engine = create_async_engine(
     url=os.getenv("DATABASE_URL"),
-    echo=os.getenv("DEBUG"),
+    echo=True,
 )
 
 async_session_maker = async_sessionmaker(
