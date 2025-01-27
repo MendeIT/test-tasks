@@ -1,36 +1,70 @@
-# import aiogram
+import logging
+from os import getenv
+
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters.command import CommandStart
+from aiogram.types import Message
+from dotenv import load_dotenv
+
+from database.crud import get_product_by_article
+from database.db import get_session
+from api.schemas import ProductBaseSchema
+
+load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=('%(asctime)s - %(levelname)s - %(name)s '
+            '- %(funcName)s[%(lineno)d] - %(message)s'),
+    encoding='utf-8'
+)
+
+dp = Dispatcher()
 
 
-# bot = aiogram.Bot(token=BOT_TOKEN)
-# dp = aiogram.Dispatcher(bot)
+async def start_bot(dispatcher: Dispatcher):
+    bot: Bot = Bot(token=getenv('BOT_TOKEN'))
+    await dispatcher.start_polling(bot)
 
-# @dp.message_handler(commands=["start"])
-# async def start_command(message: aiogram.types.Message):
-#     await message.reply("Welcome!")
 
-# @dp.message_handler(lambda message: message.text == "Get Product Data")
-# async def request_product_data(message: aiogram.types.Message):
-#     await message.reply("Please provide the product artikul.")
+@dp.message(CommandStart())
+async def start_command(message: Message):
+    await message.reply(
+        text=f"Добро пожаловать, {message.from_user.full_name}!\n"
+        "Я бот-ассистент для работы с маркеплейсом Wildberries.\n"
+        "Чтобы получить данные о товаре, отправьте мне артикул товара.",
+    )
 
-# @dp.message_handler()
-# async def send_product_data(message: aiogram.types.Message):
-#     try:
-#         artikul = int(message.text)
-#         async with async_session() as session:
-#             result = await session.execute(
-#                 select(Product).where(Product.artikul == artikul)
-#             )
-#             product = result.scalar_one_or_none()
 
-#             if not product:
-#                 await message.reply("Product not found in the database.")
-#                 return
+@dp.message((F.text.regexp(r"^(\d+)$").as_("digits")) & (F.text.len() <= 12))
+async def send_product_data(message: Message):
+    logging.debug('Обработка артикула товара.')
 
-#             response = (f"Product: {product.name}\n"
-#                         f"Artikul: {product.artikul}\n"
-#                         f"Price: {product.price} RUB\n"
-#                         f"Rating: {product.rating}\n"
-#                         f"Total Quantity: {product.total_quantity}")
-#             await message.reply(response)
-#     except ValueError:
-#         await message.reply("Invalid artikul. Please enter a valid number.")
+    article = int(message.text)
+    product = ProductBaseSchema(article=article)
+    async with get_session() as session:
+        product_db = await get_product_by_article(session, product)
+
+        if not product_db:
+            await message.reply("Товар отсутствет в базе данных.")
+            return
+
+        await message.reply(
+            text=(
+                f"Наименование товара:\n{product_db.name}\n"
+                f"Артикул: {product_db.article}\n"
+                f"Цена: {product_db.price} руб\n"
+                f"Цена со скидкой: {product_db.price_sale} руб\n"
+                f"Рейтинг товара: {product_db.rating}\n"
+                f"Общее количество на складах: {product_db.total_quantity}"
+            )
+        )
+
+
+@dp.message()
+async def send_not_found_data(message: Message):
+    await message.reply(
+        "Мы не нашли товар по данному артиклу.\n"
+        "Пожалуйста проверьте артикул.\n"
+        "Он должен состоять из цифр от 0-9."
+    )

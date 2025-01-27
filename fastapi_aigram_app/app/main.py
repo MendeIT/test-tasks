@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
+import asyncio
 from fastapi import FastAPI
 
 from api.routers import router
+from bot import dp, start_bot
 from database.db import (
     init_models,
-    drop_models,
     shutdown
 )
 from core.scheduler import scheduler
@@ -13,14 +14,17 @@ from core.scheduler import scheduler
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
     await init_models()
     scheduler.start()
+    bot_task = asyncio.create_task(start_bot(dp))
 
-    yield
-
-    scheduler.shutdown()
-    await drop_models()
-    await shutdown()
+    try:
+        yield
+    finally:
+        bot_task.cancel()
+        await shutdown()
+        scheduler.shutdown()
 
 
 app = FastAPI(lifespan=lifespan)

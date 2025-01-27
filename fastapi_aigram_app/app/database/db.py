@@ -1,27 +1,28 @@
 import os
 from contextlib import asynccontextmanager
 
-# from sqlalchemy import create_engine
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine
 )
-from dotenv import load_dotenv
 
 from database.models import Base
 
+
 load_dotenv()
 
-# # Для подключения Apscheduler
-# sync_engine = create_engine(
-#     os.getenv("SYNC_DATABASE_URL"),
-#     echo=True
-# )
+# Для подключения Apscheduler
+sync_engine = create_engine(
+    os.getenv("SYNC_DATABASE_URL"),
+    echo=os.getenv("DEBUG")
+)
 
 async_engine = create_async_engine(
     url=os.getenv("DATABASE_URL"),
-    echo=True,
+    echo=os.getenv("DEBUG"),
 )
 
 async_session_maker = async_sessionmaker(
