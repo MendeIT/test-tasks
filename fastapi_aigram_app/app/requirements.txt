@@ -41,6 +41,7 @@ propcache==0.2.1
 psycopg2==2.9.10
 pure_eval==0.2.3
 pydantic==2.10.5
+pydantic-settings==2.7.1
 pydantic_core==2.27.2
 pydentic==0.0.1.dev3
 Pygments==2.19.1

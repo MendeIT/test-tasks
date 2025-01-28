@@ -4,7 +4,7 @@ import asyncio
 from fastapi import FastAPI
 
 from api.routers import router
-from bot import dp, start_bot
+from bot import BOT, dp
 from database.db import (
     init_models,
     shutdown
@@ -17,11 +17,12 @@ async def lifespan(app: FastAPI):
 
     await init_models()
     scheduler.start()
-    bot_task = asyncio.create_task(start_bot(dp))
+    bot_task = asyncio.create_task(dp.start_polling(BOT))
 
     try:
         yield
     finally:
+        dp.stop_polling()
         bot_task.cancel()
         await shutdown()
         scheduler.shutdown()
@@ -29,9 +30,4 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(router)
-
-
-@app.get("/")
-async def start_app():
-    return {"Hello": "World"}
+app.include_router(router=router)

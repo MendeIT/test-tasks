@@ -1,22 +1,20 @@
-import os
 from typing import Any
 
 import requests
 from fastapi import HTTPException
-from dotenv import load_dotenv
 
 from api.schemas import ProductSchema
+from core.conf import settings
 from database.crud import get_product_by_article
 from database.db import get_session
 from database.models import Product
-
-load_dotenv()
 
 
 async def request_data_from_wb_by_article(article: int):
     """Получить данные с API WB по артикулу товара."""
 
-    url = os.getenv("WB_URL") + str(article)
+    url = settings.WB_URL + str(article)
+
     response = requests.get(url)
 
     if response.status_code != 200:

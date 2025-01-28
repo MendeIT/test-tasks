@@ -1,16 +1,14 @@
 import logging
-from os import getenv
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters.command import CommandStart
 from aiogram.types import Message
-from dotenv import load_dotenv
 
+from api.schemas import ProductBaseSchema
+from core.conf import settings
 from database.crud import get_product_by_article
 from database.db import get_session
-from api.schemas import ProductBaseSchema
 
-load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -19,12 +17,8 @@ logging.basicConfig(
     encoding='utf-8'
 )
 
-dp = Dispatcher()
-
-
-async def start_bot(dispatcher: Dispatcher):
-    bot: Bot = Bot(token=getenv('BOT_TOKEN'))
-    await dispatcher.start_polling(bot)
+BOT: Bot = Bot(token=settings.BOT_TOKEN)
+dp: Dispatcher = Dispatcher()
 
 
 @dp.message(CommandStart())

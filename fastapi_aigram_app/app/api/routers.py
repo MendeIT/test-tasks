@@ -8,8 +8,8 @@ from core.requests import (
     request_data_from_wb_by_article,
 )
 from core.scheduler import scheduler
-from database.db import get_session
 from database.crud import get_product_by_article
+from database.db import get_session
 from database.models import Product
 
 
