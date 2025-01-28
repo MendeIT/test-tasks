@@ -9,6 +9,8 @@ services:
       - .env
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - fastapibot
 
   backend:
     build:
@@ -20,3 +22,11 @@ services:
       - .env
     depends_on:
       - db
+    ports:
+      - "8000:8000"
+    networks:
+      - fastapibot
+
+networks:
+  fastapibot:
+   name: fastapibot

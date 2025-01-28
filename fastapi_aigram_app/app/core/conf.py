@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     POSTGRES_DB_NAME: str
     BOT_TOKEN: str
     WB_URL: str
+    INTERVAL: str
 
     @property
     def ASYNC_DATABASE_URL(self):

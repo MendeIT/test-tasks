@@ -1,10 +1,10 @@
-FROM python:3.12-alpine
+FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apk update && apk add --no-cache \
-    postgresql-dev gcc musl-dev \
-    && pip install --upgrade pip
+RUN apt-get update && apt-get install -y \
+    libpq-dev gcc \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 
@@ -12,4 +12,4 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-CMD ["fastapi", "dev", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

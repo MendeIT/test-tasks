@@ -7,6 +7,7 @@ from core.requests import (
     periodic_get_data,
     request_data_from_wb_by_article,
 )
+from core.conf import settings
 from core.scheduler import scheduler
 from database.crud import get_product_by_article
 from database.db import get_session
@@ -56,7 +57,7 @@ async def subscribe_to_product(article: int):
     scheduler.add_job(
         periodic_get_data,
         "interval",
-        minutes=30,
+        minutes=int(settings.INTERVAL),
         id=job_id,
         kwargs={"article": article}
     )
