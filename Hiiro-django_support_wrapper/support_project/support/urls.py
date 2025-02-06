@@ -1,7 +1,16 @@
-from django.urls import path
-from .views import support_form
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+from support.views import SupportRequestViewSet
+
+
+router = DefaultRouter()
+router.register(
+    r'support-requests',
+    SupportRequestViewSet,
+    basename="supportrequest"
+)
 
 urlpatterns = [
-    path('submit/', support_form, name='support_form'),
-    path('test/', support_form, name='test'),
+    path('', include(router.urls)),
 ]
