@@ -3,8 +3,8 @@ from datetime import datetime, timezone, timedelta
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import Reservation
-from schemas.reservations_schema import ReservationCreateSchema
+from app.db.models import Reservation
+from app.schemas.reservations_schema import ReservationCreateSchema
 
 
 async def create_reservation(
@@ -60,20 +60,21 @@ async def get_reservations_by_table(
     return result.scalars().all()
 
 
-def check_reserved(
+def has_reservation_conflict(
     reservations: list[Reservation],
     new_start_time_reserved: datetime
 ) -> bool:
-    """Проверка на пересечение брони."""
+    """Проверка на пересечение брони.
+    Если есть конфликт, вернет True."""
 
     for reserved in reservations:
-        exist_time_end = reserved.reservation_time + timedelta(
+        existing_time_end = reserved.reservation_time + timedelta(
             minutes=reserved.duration_minutes
         )
-        if exist_time_end.replace(
+        if existing_time_end.replace(
             tzinfo=timezone.utc
-        ) > new_start_time_reserved:
+        ) >= new_start_time_reserved:
 
-            return False
+            return True
 
-    return True
+    return False

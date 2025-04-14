@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine
 )
 
-from core.config import settings
-from db.models import Base
+from app.core.config import settings
+from app.db.models import Base
 
 
 class OrmSettgings:

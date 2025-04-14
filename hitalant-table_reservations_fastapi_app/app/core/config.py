@@ -32,10 +32,16 @@ class Settings(BaseSettings):
     def ASYNC_DATABASE_URL(self):
         """Путь для асинхронного подключения к PostgreSQL."""
 
-        return ("postgresql+asyncpg://"
-                f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
-                f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/"
-                f"{self.POSTGRES_DB_NAME}")
+        return (
+            'postgresql+asyncpg://'
+            f'{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@'
+            f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/'
+            f'{self.POSTGRES_DB_NAME}'
+        )
+
+    @property
+    def TEST_ASYNC_DATABASE_URL(self):
+        return f"{self.ASYNC_DATABASE_URL}_test"
 
 
 settings = Settings()

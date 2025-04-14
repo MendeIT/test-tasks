@@ -1,8 +1,8 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import Table
-from schemas.tables_schema import TableCreateSchema
+from app.db.models import Table
+from app.schemas.tables_schema import TableCreateSchema
 
 
 async def create_table(

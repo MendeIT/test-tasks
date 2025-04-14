@@ -5,10 +5,10 @@ import uvicorn
 from fastapi import FastAPI
 from sqlalchemy.exc import IntegrityError
 
-from core.config import settings
-from db.database import orm_settings
-from core.register import register_exceptions, register_routers
-from core.exceptions import integrity_error_handler
+from app.core.config import settings
+from app.db.database import orm_settings
+from app.core.register import register_exceptions, register_routers
+from app.core.exceptions import integrity_error_handler
 
 
 @asynccontextmanager
@@ -24,6 +24,20 @@ async def lifespan(app: FastAPI):
     await orm_settings.shutdown_session()
 
 
+def create_app() -> FastAPI:
+    app = FastAPI(
+        debug=settings.DEBUG,
+        lifespan=lifespan,
+        exception_handlers={
+            IntegrityError: integrity_error_handler,
+        }
+    )
+    return app
+
+
+app = create_app()
+
+
 def start_server(app: FastAPI):
     """Запуск Uvicorn-сервера."""
 
@@ -36,13 +50,6 @@ def start_server(app: FastAPI):
 
 
 if __name__ == "__main__":
-    app = FastAPI(
-        debug=settings.DEBUG,
-        lifespan=lifespan,
-        exception_handlers={
-            IntegrityError: integrity_error_handler,
-        }
-    )
     try:
         start_server(app)
     except KeyboardInterrupt:

@@ -1,20 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from crud.reservations_crud import (
-    check_reserved,
+from app.crud.reservations_crud import (
     get_reservations_by_table,
     create_reservation,
     delete_reservation,
     get_list_reservations,
+    has_reservation_conflict,
 )
-from db.database import orm_settings
-from schemas.reservations_schema import (
+from app.db.database import orm_settings
+from app.schemas.reservations_schema import (
     ReservationCreateSchema,
     ReservationReadSchema,
 )
 
-router_reservations = APIRouter(prefix="/api/v1/reservations")
+router_reservations = APIRouter(
+    prefix="/api/v1/reservations", tags=["reservations"]
+)
 
 
 @router_reservations.get(
@@ -41,7 +43,10 @@ async def create_new_reservation_router(
         reservation,
         session
     )
-    if not check_reserved(existing_reservations, reservation.reservation_time):
+    if has_reservation_conflict(
+        existing_reservations,
+        reservation.reservation_time
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='На текущее время, стол зарезервирован.'

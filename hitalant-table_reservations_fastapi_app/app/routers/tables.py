@@ -1,19 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from crud.tables_crud import (
+from app.crud.tables_crud import (
     get_by_name_table_or_none,
     create_table,
     delete_table,
     get_list_tables,
 )
-from db.database import orm_settings
-from schemas.tables_schema import (
+from app.db.database import orm_settings
+from app.schemas.tables_schema import (
     TableCreateSchema,
     TableReadSchema,
 )
 
-router_tables = APIRouter(prefix="/api/v1/tables")
+router_tables = APIRouter(prefix="/api/v1/tables", tags=["tables"])
 
 
 @router_tables.get(
