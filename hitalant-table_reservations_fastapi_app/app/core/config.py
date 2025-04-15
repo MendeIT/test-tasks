@@ -9,7 +9,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     """Настройки приложения."""
-    BASE_DIR: ClassVar = Path(__file__).resolve().parent.parent
+    BASE_DIR: ClassVar = Path(__file__).resolve().parent.parent.parent
 
     DEBUG: bool
     TIMEZONE: str
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    POSTGRES_DB_NAME: str
+    POSTGRES_DB: str
 
     model_config = SettingsConfigDict(
         env_file=str(BASE_DIR / '.env'),
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
             'postgresql+asyncpg://'
             f'{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@'
             f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/'
-            f'{self.POSTGRES_DB_NAME}'
+            f'{self.POSTGRES_DB}'
         )
 
     @property
