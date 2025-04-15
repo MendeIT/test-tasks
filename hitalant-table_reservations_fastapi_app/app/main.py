@@ -1,3 +1,4 @@
+import asyncio
 import sys
 from contextlib import asynccontextmanager
 
@@ -38,21 +39,22 @@ def create_app() -> FastAPI:
 app = create_app()
 
 
-def start_server(app: FastAPI):
+def start_dev_server():
     """Запуск Uvicorn-сервера."""
 
     uvicorn.run(
-        app,
+        "app.main:app",
         host=settings.UVICORN_HOST,
         port=int(settings.UVICORN_PORT),
-        reload=False
+        reload=settings.DEBUG,
+        factory=True
     )
 
 
 if __name__ == "__main__":
     try:
-        start_server(app)
-    except KeyboardInterrupt:
+        start_dev_server()
+    except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
         message = 'Interrupted!'
         print(f'{message:_^50}')
         sys.exit(0)

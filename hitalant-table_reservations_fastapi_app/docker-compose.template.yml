@@ -1,0 +1,31 @@
+version: '3.8'
+
+volumes:
+  pg_data:
+
+services:
+  db:
+    image: postgres:16
+    container_name: hitalant_db
+    env_file: 
+      - .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: always
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mendeit/hitalant_backend
+    container_name: hitalant_backend
+    env_file: 
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./alembic:/app/alembic
+    ports:
+      - 8000:8000
